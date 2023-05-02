@@ -1,4 +1,4 @@
-<html>
+	<html>
  <head>
  	<title>SQL injection</title>
  	<style>
@@ -28,25 +28,23 @@
 	 
 			$username = $_POST["user"];
 			$pass = $_POST["password"];
-				# (2.1) creem el string de la consulta (query)
-			$qstr = "SELECT * FROM users WHERE name='$username' AND password=SHA2('$pass',512);";
-			$consulta = $pdo->prepare($qstr);
 
-			# mostrem la SQL query per veure el què s'executarà (a mode debug)
-			echo "<br>$qstr<br>";
 
-			# Enviem la query al SGBD per obtenir el resultat
-			$consulta->execute();
-	 
-			# Gestió d'errors
-			if( $consulta->errorInfo()[1] ) {
-				echo "<p>ERROR: ".$consulta->errorInfo()[2]."</p>\n";
+			$stmt = $pdo->prepare("select * from users where name=? AND password=SHA2(?,512);");
+			// Bind
+			$stmt->bindParam(1, $username);
+			$stmt->bindParam(2, $pass);
+			// Excecute
+			$stmt->execute();
+
+			if( $stmt->errorInfo()[1] ) {
+				echo "<p>ERROR: ".$stmt->errorInfo()[2]."</p>\n";
 				die;
 			}
 
-			if( $consulta->rowCount() >= 1 )
+			if( $stmt->rowCount() >= 1 )
 				# hi ha 1 resultat o més d'usuaris amb nom i password
-				foreach( $consulta as $user ) {
+				foreach( $stmt as $user ) {
 					echo "<div class='user'>Hola ".$user["name"]." (".$user["role"].").</div>";
 				}
 			else
